@@ -1,0 +1,13 @@
+#All values are initially set to the maximum possible value that you can enchant.
+#You need to configure these to your own needs, otherwise the plugin will do nothing!
+maxProt: 4
+maxFireProt: 4
+maxProjProt: 4
+maxSharp: 5
+maxFire: 2
+maxBowPower: 5
+maxBowFire: 1
+maxBowInfinity: 1
+
+#Seriously, do not touch this.
+configVersionDoNotTouch: 1

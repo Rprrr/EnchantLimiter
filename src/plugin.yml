@@ -1,0 +1,12 @@
+main: com.guyag.enchantlimiter.EnchantLimiter
+version: 1.0
+name: EnchantLimiter
+author: Guyag
+commands:
+  enchantlimiter:
+    description: Parent command
+    usage: /<command> <subcommand>
+permissions:
+  enchantlimiter.reload: 
+    description: Allows the user to reload the plugin
+    default: op
