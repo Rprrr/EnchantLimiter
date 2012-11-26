@@ -20,15 +20,17 @@ public class EnchantLimiter extends JavaPlugin{
 	public int maxProjProt = 4;
 	public int maxSharp = 5;
 	public int maxFire = 2;
+	public int maxKB = 2;
 	public int maxBowPower = 5;
 	public int maxBowFire = 1;
 	public int maxBowInfinity = 1;
-	public int configVersion = 1;
+	public int maxBowKB = 2;
+	public int configVersion = 2;
 	
 	@Override
 	public void onEnable() {
 		log = this.getLogger();
-		final int version = 1;
+		final int version = 2;
 		//listeners
 		this.getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 		this.getServer().getPluginManager().registerEvents(new HitListener(this), this);
@@ -102,6 +104,9 @@ public class EnchantLimiter extends JavaPlugin{
 	public int getMaxFire() {
 		return maxFire;
 	}
+	public int getMaxKB() {
+		return maxKB;
+	}
 	public int getMaxBowPower() {
 		return maxBowPower;
 	}
@@ -110,6 +115,9 @@ public class EnchantLimiter extends JavaPlugin{
 	}
 	public int getMaxBowInfinity() {
 		return maxBowInfinity;
+	}
+	public int getMaxBowKB() {
+		return maxBowKB;
 	}
 	
 	/**
@@ -198,6 +206,14 @@ public class EnchantLimiter extends JavaPlugin{
 				}
 			}
 		}
+		if(item.containsEnchantment(Enchantment.KNOCKBACK)) {
+			if(item.getEnchantmentLevel(Enchantment.KNOCKBACK) > getMaxKB()) {
+				item.removeEnchantment(Enchantment.KNOCKBACK);
+				if(getMaxKB() > 0) {
+					item.addEnchantment(Enchantment.KNOCKBACK, getMaxKB());
+				}
+			}
+		}
 		
 		//###########################################
 		//###############Bow enchants################
@@ -223,6 +239,14 @@ public class EnchantLimiter extends JavaPlugin{
 				item.removeEnchantment(Enchantment.ARROW_INFINITE);
 				if(getMaxBowInfinity() > 0) {
 					item.addEnchantment(Enchantment.ARROW_INFINITE, getMaxBowInfinity());
+				}
+			}
+		}
+		if(item.containsEnchantment(Enchantment.ARROW_KNOCKBACK)) {
+			if(item.getEnchantmentLevel(Enchantment.ARROW_KNOCKBACK) > getMaxBowKB()) {
+				item.removeEnchantment(Enchantment.ARROW_KNOCKBACK);
+				if(getMaxBowKB() > 0) {
+					item.addEnchantment(Enchantment.ARROW_KNOCKBACK, getMaxBowKB());
 				}
 			}
 		}

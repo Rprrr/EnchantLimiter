@@ -5,9 +5,11 @@ maxFireProt: 4
 maxProjProt: 4
 maxSharp: 5
 maxFire: 2
+maxKB: 2
 maxBowPower: 5
 maxBowFire: 1
 maxBowInfinity: 1
+maxBowKB: 2
 
 #Seriously, do not touch this.
-configVersionDoNotTouch: 1
+configVersionDoNotTouch: 2

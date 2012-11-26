@@ -1,5 +1,5 @@
 main: com.guyag.enchantlimiter.EnchantLimiter
-version: 1.0
+version: 1.0.1
 name: EnchantLimiter
 author: Guyag
 commands:
