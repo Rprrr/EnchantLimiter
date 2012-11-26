@@ -11,5 +11,10 @@ maxBowFire: 1
 maxBowInfinity: 1
 maxBowKB: 2
 
+#Whether enchanting of items which are above values listed above should be allowed
+#If not, it will continue until it finds an allowable enchantment.
+#(If people do enchant them, they will be removed and downgraded even if this setting is false)
+disableEnchanting: false
+
 #Seriously, do not touch this.
-configVersionDoNotTouch: 2
+configVersionDoNotTouch: 3

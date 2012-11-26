@@ -1,6 +1,7 @@
 package com.guyag.enchantlimiter;
 
 import java.io.File;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bukkit.command.Command;
@@ -25,12 +26,13 @@ public class EnchantLimiter extends JavaPlugin{
 	public int maxBowFire = 1;
 	public int maxBowInfinity = 1;
 	public int maxBowKB = 2;
-	public int configVersion = 2;
+	public boolean disableEnchanting = false;
+	public int configVersion = 3;
 	
 	@Override
 	public void onEnable() {
 		log = this.getLogger();
-		final int version = 2;
+		final int version = 3;
 		//listeners
 		this.getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 		this.getServer().getPluginManager().registerEvents(new HitListener(this), this);
@@ -43,6 +45,10 @@ public class EnchantLimiter extends JavaPlugin{
 		
 		//get config options
 		loadConfig();
+		//Only register the listener if they want enchanting disabled
+		if(disableEnchanting) {
+			this.getServer().getPluginManager().registerEvents(new EnchantListener(this), this);
+		}
 		
 		if(version != configVersion) {
 			log.warning("Outdated config version!");
@@ -62,9 +68,12 @@ public class EnchantLimiter extends JavaPlugin{
 		maxProjProt = config.getInt("maxProjProt");
 		maxSharp = config.getInt("maxSharp");
 		maxFire = config.getInt("maxFire");
+		maxKB = config.getInt("maxKB");
 		maxBowPower = config.getInt("maxBowPower");
 		maxBowFire = config.getInt("maxBowFire");
 		maxBowInfinity = config.getInt("maxBowInfinity");
+		maxBowKB = config.getInt("maxBowKB");
+		disableEnchanting = config.getBoolean("disableEnchanting");
 		configVersion = config.getInt("configVersionDoNotTouch");
 	}
 	
@@ -75,7 +84,6 @@ public class EnchantLimiter extends JavaPlugin{
 					if(sender.hasPermission("enchantlimiter.reload")) {
 						loadConfig();
 						sender.sendMessage("Config reloaded");
-						log.info(""+maxProt);
 					}
 					else {
 						sender.sendMessage("No permission");
@@ -128,7 +136,7 @@ public class EnchantLimiter extends JavaPlugin{
 		ItemStack[] inv = player.getInventory().getContents();
 		for(int i=0;i<inv.length;i++) {
 			if(inv[i] != null) {
-				inv[i] = fixEnchant(inv[i]);
+				inv[i] = fixItem(inv[i]);
 			}
 		}
 		player.getInventory().setContents(inv);
@@ -140,16 +148,16 @@ public class EnchantLimiter extends JavaPlugin{
 	 */
 	public void fixArmour(Player player) {
 		if(player.getInventory().getHelmet() != null) {
-			player.getInventory().setHelmet(fixEnchant(player.getInventory().getHelmet()));
+			player.getInventory().setHelmet(fixItem(player.getInventory().getHelmet()));
 		}
 		if(player.getInventory().getChestplate() != null) {
-			player.getInventory().setChestplate(fixEnchant(player.getInventory().getChestplate()));
+			player.getInventory().setChestplate(fixItem(player.getInventory().getChestplate()));
 		}
 		if(player.getInventory().getLeggings() != null) {
-			player.getInventory().setLeggings(fixEnchant(player.getInventory().getLeggings()));
+			player.getInventory().setLeggings(fixItem(player.getInventory().getLeggings()));
 		}
 		if(player.getInventory().getBoots() != null) {
-			player.getInventory().setBoots(fixEnchant(player.getInventory().getBoots()));
+			player.getInventory().setBoots(fixItem(player.getInventory().getBoots()));
 		}	
 	}
 	
@@ -158,31 +166,46 @@ public class EnchantLimiter extends JavaPlugin{
 	 * @param item  ItemStack (potentially) with bad enchants.
 	 * @return  ItemStack without bad enchants.
 	 */
-	public ItemStack fixEnchant(ItemStack item) {
+	public ItemStack fixItem(ItemStack item) {
+		Map<Enchantment,Integer> enchants = fixEnchant(item.getEnchantments());
+		for(Enchantment ench : item.getEnchantments().keySet()) {
+			item.removeEnchantment(ench);
+		}
+		item.addEnchantments(enchants);
+		return item;
+	}
+	
+
+	/**
+	 * Returns an enchantment map sans bad enchants.
+	 * @param enchants  Map of enchants and levels (potentially) with bad enchants.
+	 * @return  Enchantment map without bad enchants.
+	 */
+	public Map<Enchantment,Integer> fixEnchant(Map<Enchantment,Integer> enchants) {
 		//###########################################
 		//##############Armour enchants##############
 		//###########################################
-		if(item.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL)) {
-			if(item.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL) > getMaxProt()) {
-				item.removeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL);
+		if(enchants.containsKey(Enchantment.PROTECTION_ENVIRONMENTAL)) {
+			if(enchants.get(Enchantment.PROTECTION_ENVIRONMENTAL) > getMaxProt()) {
+				enchants.remove(Enchantment.PROTECTION_ENVIRONMENTAL);
 				if(getMaxProt() > 0) {
-					item.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, getMaxProt());
+					enchants.put(Enchantment.PROTECTION_ENVIRONMENTAL, getMaxProt());
 				}
 			}
 		}
-		if(item.containsEnchantment(Enchantment.PROTECTION_FIRE)) {
-			if(item.getEnchantmentLevel(Enchantment.PROTECTION_FIRE) > getMaxFireProt()) {
-				item.removeEnchantment(Enchantment.PROTECTION_FIRE);
+		if(enchants.containsKey(Enchantment.PROTECTION_FIRE)) {
+			if(enchants.get(Enchantment.PROTECTION_FIRE) > getMaxFireProt()) {
+				enchants.remove(Enchantment.PROTECTION_FIRE);
 				if(getMaxFireProt() > 0) {
-					item.addEnchantment(Enchantment.PROTECTION_FIRE, getMaxFireProt());
+					enchants.put(Enchantment.PROTECTION_FIRE, getMaxFireProt());
 				}
 			}
 		}
-		if(item.containsEnchantment(Enchantment.PROTECTION_PROJECTILE)) {
-			if(item.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE) > getMaxProjProt()) {
-				item.removeEnchantment(Enchantment.PROTECTION_PROJECTILE);
+		if(enchants.containsKey(Enchantment.PROTECTION_PROJECTILE)) {
+			if(enchants.get(Enchantment.PROTECTION_PROJECTILE) > getMaxProjProt()) {
+				enchants.remove(Enchantment.PROTECTION_PROJECTILE);
 				if(getMaxProjProt() > 0) {
-					item.addEnchantment(Enchantment.PROTECTION_PROJECTILE, getMaxProjProt());
+					enchants.put(Enchantment.PROTECTION_PROJECTILE, getMaxProjProt());
 				}
 			}
 		}
@@ -190,27 +213,27 @@ public class EnchantLimiter extends JavaPlugin{
 		//###########################################
 		//##############Sword enchants###############
 		//###########################################
-		if(item.containsEnchantment(Enchantment.DAMAGE_ALL)) {
-			if(item.getEnchantmentLevel(Enchantment.DAMAGE_ALL) > getMaxSharp()) {
-				item.removeEnchantment(Enchantment.DAMAGE_ALL);
+		if(enchants.containsKey(Enchantment.DAMAGE_ALL)) {
+			if(enchants.get(Enchantment.DAMAGE_ALL) > getMaxSharp()) {
+				enchants.remove(Enchantment.DAMAGE_ALL);
 				if(getMaxSharp() > 0) {
-					item.addEnchantment(Enchantment.DAMAGE_ALL, getMaxSharp());
+					enchants.put(Enchantment.DAMAGE_ALL, getMaxSharp());
 				}
 			}
 		}
-		if(item.containsEnchantment(Enchantment.FIRE_ASPECT)) {
-			if(item.getEnchantmentLevel(Enchantment.FIRE_ASPECT) > getMaxFire()) {
-				item.removeEnchantment(Enchantment.FIRE_ASPECT);
+		if(enchants.containsKey(Enchantment.FIRE_ASPECT)) {
+			if(enchants.get(Enchantment.FIRE_ASPECT) > getMaxFire()) {
+				enchants.remove(Enchantment.FIRE_ASPECT);
 				if(getMaxFire() > 0) {
-					item.addEnchantment(Enchantment.FIRE_ASPECT, getMaxFire());
+					enchants.put(Enchantment.FIRE_ASPECT, getMaxFire());
 				}
 			}
 		}
-		if(item.containsEnchantment(Enchantment.KNOCKBACK)) {
-			if(item.getEnchantmentLevel(Enchantment.KNOCKBACK) > getMaxKB()) {
-				item.removeEnchantment(Enchantment.KNOCKBACK);
+		if(enchants.containsKey(Enchantment.KNOCKBACK)) {
+			if(enchants.get(Enchantment.KNOCKBACK) > getMaxKB()) {
+				enchants.remove(Enchantment.KNOCKBACK);
 				if(getMaxKB() > 0) {
-					item.addEnchantment(Enchantment.KNOCKBACK, getMaxKB());
+					enchants.put(Enchantment.KNOCKBACK, getMaxKB());
 				}
 			}
 		}
@@ -218,39 +241,39 @@ public class EnchantLimiter extends JavaPlugin{
 		//###########################################
 		//###############Bow enchants################
 		//###########################################
-		if(item.containsEnchantment(Enchantment.ARROW_DAMAGE)) {
-			if(item.getEnchantmentLevel(Enchantment.ARROW_DAMAGE) > getMaxBowPower()) {
-				item.removeEnchantment(Enchantment.ARROW_DAMAGE);
+		if(enchants.containsKey(Enchantment.ARROW_DAMAGE)) {
+			if(enchants.get(Enchantment.ARROW_DAMAGE) > getMaxBowPower()) {
+				enchants.remove(Enchantment.ARROW_DAMAGE);
 				if(getMaxBowPower() > 0) {
-					item.addEnchantment(Enchantment.ARROW_DAMAGE, getMaxBowPower());
+					enchants.put(Enchantment.ARROW_DAMAGE, getMaxBowPower());
 				}
 			}
 		}
-		if(item.containsEnchantment(Enchantment.ARROW_FIRE)) {
-			if(item.getEnchantmentLevel(Enchantment.ARROW_FIRE) > getMaxBowFire()) {
-				item.removeEnchantment(Enchantment.ARROW_FIRE);
+		if(enchants.containsKey(Enchantment.ARROW_FIRE)) {
+			if(enchants.get(Enchantment.ARROW_FIRE) > getMaxBowFire()) {
+				enchants.remove(Enchantment.ARROW_FIRE);
 				if(getMaxBowFire() > 0) {
-					item.addEnchantment(Enchantment.ARROW_FIRE, getMaxBowFire());
+					enchants.put(Enchantment.ARROW_FIRE, getMaxBowFire());
 				}
 			}
 		}
-		if(item.containsEnchantment(Enchantment.ARROW_INFINITE)) {
-			if(item.getEnchantmentLevel(Enchantment.ARROW_INFINITE) > getMaxBowInfinity()) {
-				item.removeEnchantment(Enchantment.ARROW_INFINITE);
+		if(enchants.containsKey(Enchantment.ARROW_INFINITE)) {
+			if(enchants.get(Enchantment.ARROW_INFINITE) > getMaxBowInfinity()) {
+				enchants.remove(Enchantment.ARROW_INFINITE);
 				if(getMaxBowInfinity() > 0) {
-					item.addEnchantment(Enchantment.ARROW_INFINITE, getMaxBowInfinity());
+					enchants.put(Enchantment.ARROW_INFINITE, getMaxBowInfinity());
 				}
 			}
 		}
-		if(item.containsEnchantment(Enchantment.ARROW_KNOCKBACK)) {
-			if(item.getEnchantmentLevel(Enchantment.ARROW_KNOCKBACK) > getMaxBowKB()) {
-				item.removeEnchantment(Enchantment.ARROW_KNOCKBACK);
+		if(enchants.containsKey(Enchantment.ARROW_KNOCKBACK)) {
+			if(enchants.get(Enchantment.ARROW_KNOCKBACK) > getMaxBowKB()) {
+				enchants.remove(Enchantment.ARROW_KNOCKBACK);
 				if(getMaxBowKB() > 0) {
-					item.addEnchantment(Enchantment.ARROW_KNOCKBACK, getMaxBowKB());
+					enchants.put(Enchantment.ARROW_KNOCKBACK, getMaxBowKB());
 				}
 			}
 		}
-		return item;
+		return enchants;
 	}
 	
 }

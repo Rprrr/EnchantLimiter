@@ -18,7 +18,7 @@ public class HitListener implements Listener {
 			
 			//The item they are doing damage with.
 			if(((Player)event.getDamager()).getItemInHand() != null) {
-				((Player)event.getDamager()).setItemInHand(plugin.fixEnchant(((Player)event.getDamager()).getItemInHand()));
+				((Player)event.getDamager()).setItemInHand(plugin.fixItem(((Player)event.getDamager()).getItemInHand()));
 			}
 			
 			//Check their armour, while we're at it. 
@@ -34,7 +34,7 @@ public class HitListener implements Listener {
 	@EventHandler
 	public void bowFire(EntityShootBowEvent event) {
 		if(event.getEntityType().equals(EntityType.PLAYER)) {
-			((Player)event.getEntity()).getInventory().setItemInHand(plugin.fixEnchant(((Player)event.getEntity()).getItemInHand()));
+			((Player)event.getEntity()).getInventory().setItemInHand(plugin.fixItem(((Player)event.getEntity()).getItemInHand()));
 		}
 	}
 	
