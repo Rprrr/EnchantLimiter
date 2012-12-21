@@ -19,6 +19,7 @@ public class EnchantLimiter extends JavaPlugin{
 	public int maxProt = 4;
 	public int maxFireProt = 4;
 	public int maxProjProt = 4;
+	public int maxThorns = 3;
 	public int maxSharp = 5;
 	public int maxFire = 2;
 	public int maxKB = 2;
@@ -27,12 +28,12 @@ public class EnchantLimiter extends JavaPlugin{
 	public int maxBowInfinity = 1;
 	public int maxBowKB = 2;
 	public boolean disableEnchanting = false;
-	public int configVersion = 3;
+	public int configVersion = 4;
 	
 	@Override
 	public void onEnable() {
 		log = this.getLogger();
-		final int version = 3;
+		final int version = 4;
 		//listeners
 		this.getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 		this.getServer().getPluginManager().registerEvents(new HitListener(this), this);
@@ -42,14 +43,12 @@ public class EnchantLimiter extends JavaPlugin{
 		if( !( new File(getDataFolder(), "config.yml").exists() ) ) {
 			this.saveDefaultConfig();
 		}
-		
 		//get config options
 		loadConfig();
 		//Only register the listener if they want enchanting disabled
 		if(disableEnchanting) {
 			this.getServer().getPluginManager().registerEvents(new EnchantListener(this), this);
-		}
-		
+		}	
 		if(version != configVersion) {
 			log.warning("Outdated config version!");
 			log.warning("Some values will default to maximum possible.");
@@ -66,6 +65,7 @@ public class EnchantLimiter extends JavaPlugin{
 		maxProt = config.getInt("maxProt");
 		maxFireProt = config.getInt("maxFireProt");
 		maxProjProt = config.getInt("maxProjProt");
+		maxThorns = config.getInt("maxThorns");
 		maxSharp = config.getInt("maxSharp");
 		maxFire = config.getInt("maxFire");
 		maxKB = config.getInt("maxKB");
@@ -105,6 +105,9 @@ public class EnchantLimiter extends JavaPlugin{
 	}
 	public int getMaxProjProt() {
 		return maxProjProt;
+	}
+	public int getMaxThorns() {
+		return maxThorns;
 	}
 	public int getMaxSharp() {
 		return maxSharp;
@@ -206,6 +209,14 @@ public class EnchantLimiter extends JavaPlugin{
 				enchants.remove(Enchantment.PROTECTION_PROJECTILE);
 				if(getMaxProjProt() > 0) {
 					enchants.put(Enchantment.PROTECTION_PROJECTILE, getMaxProjProt());
+				}
+			}
+		}
+		if(enchants.containsKey(Enchantment.THORNS)) {
+			if(enchants.get(Enchantment.THORNS) > getMaxThorns()) {
+				enchants.remove(Enchantment.THORNS);
+				if(getMaxThorns() > 0) {
+					enchants.put(Enchantment.THORNS, getMaxThorns());
 				}
 			}
 		}

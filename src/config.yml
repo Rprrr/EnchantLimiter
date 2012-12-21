@@ -3,6 +3,7 @@
 maxProt: 4
 maxFireProt: 4
 maxProjProt: 4
+maxThorns: 3
 maxSharp: 5
 maxFire: 2
 maxKB: 2
@@ -17,4 +18,4 @@ maxBowKB: 2
 disableEnchanting: false
 
 #Seriously, do not touch this.
-configVersionDoNotTouch: 3
+configVersionDoNotTouch: 4
