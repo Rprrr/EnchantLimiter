@@ -1,6 +1,7 @@
 package com.guyag.enchantlimiter;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -184,7 +185,11 @@ public class EnchantLimiter extends JavaPlugin{
 	 * @param enchants  Map of enchants and levels (potentially) with bad enchants.
 	 * @return  Enchantment map without bad enchants.
 	 */
-	public Map<Enchantment,Integer> fixEnchant(Map<Enchantment,Integer> enchants) {
+	public HashMap<Enchantment,Integer> fixEnchant(Map<Enchantment,Integer> enchantments) {
+		HashMap<Enchantment,Integer> enchants = new HashMap<Enchantment,Integer>();
+		for(Enchantment key : enchantments.keySet()) {
+			enchants.put(key, enchantments.get(key));
+		}
 		//###########################################
 		//##############Armour enchants##############
 		//###########################################
@@ -284,6 +289,7 @@ public class EnchantLimiter extends JavaPlugin{
 				}
 			}
 		}
+		//enchantments = new Map<Enchantment,Integer>(enchants);
 		return enchants;
 	}
 	
